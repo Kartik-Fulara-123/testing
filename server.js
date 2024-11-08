@@ -156,8 +156,9 @@ app.post("/items", async (req, res) => {
 
 app.post("/todos", async (req, res) => {
   try {
-    const savedItems = await Todos(req.body);
-    res.status(201).json(savedItems); // Return the saved items
+    const newTodo = new Todos(req.body); // Create a new instance
+    const savedItem = await newTodo.save(); // Save to the database
+    res.status(201).json(savedItem); // Return the saved item
   } catch (err) {
     res.status(400).json({ message: err.message }); // Handle validation errors
   }
