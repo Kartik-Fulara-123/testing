@@ -68,7 +68,20 @@ const itemSchema = new mongoose.Schema({
   },
 });
 
+const todosSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "Title is required"],
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const Item = mongoose.model("Item", itemSchema);
+
+const Todos = mongoose.model("Todos", todosSchema);
 
 // 1. GET / - Welcome message
 app.get("/", (req, res) => {
@@ -85,6 +98,15 @@ app.get("/items", async (req, res) => {
   }
 });
 
+app.get("/todos", async (req, res) => {
+  try {
+    const items = await Todos.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // 3. GET /items/:id - Get an item by ID
 app.get("/items/:id", async (req, res) => {
   try {
@@ -93,6 +115,19 @@ app.get("/items/:id", async (req, res) => {
       res.json(item);
     } else {
       res.status(404).json({ message: "Item not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/todos/:id", async (req, res) => {
+  try {
+    const item = await Todos.findById(req.params.id);
+    if (item) {
+      res.json(item);
+    } else {
+      res.status(404).json({ message: "Todos not found" });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -118,6 +153,16 @@ app.post("/items", async (req, res) => {
     res.status(400).json({ message: err.message }); // Handle validation errors
   }
 });
+
+app.post("/todos", async (req, res) => {
+  try {
+    const savedItems = await Todos(req.body);
+    res.status(201).json(savedItems); // Return the saved items
+  } catch (err) {
+    res.status(400).json({ message: err.message }); // Handle validation errors
+  }
+});
+
 // 5. PUT /items/:id - Update an item by ID
 app.put("/items/:id", async (req, res) => {
   try {
@@ -135,10 +180,40 @@ app.put("/items/:id", async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+app.put("/todos/:id", async (req, res) => {
+  try {
+    const updatedItem = await Todos.findByIdAndUpdate(
+      req.params.id,
+      req.body, // Pass req.body directly to update all fields
+      { new: true, runValidators: true }
+    );
+    if (updatedItem) {
+      res.json(updatedItem);
+    } else {
+      res.status(404).json({ message: "Todos not found" });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 // 6. DELETE /items/:id - Delete an item by ID
 app.delete("/items/:id", async (req, res) => {
   try {
     const deletedItem = await Item.findByIdAndDelete(req.params.id);
+    if (deletedItem) {
+      res.json({ message: "Item deleted" });
+    } else {
+      res.status(404).json({ message: "Item not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete("/todos/:id", async (req, res) => {
+  try {
+    const deletedItem = await Todos.findByIdAndDelete(req.params.id);
     if (deletedItem) {
       res.json({ message: "Item deleted" });
     } else {
