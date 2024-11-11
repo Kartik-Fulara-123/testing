@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const morgan = require("morgan");
 const todosRoutes = require("./routes/todosRoutes");
 
 const app = express();
@@ -19,6 +20,7 @@ db.once("open", () => console.log("Connected to MongoDB"));
 
 // Middleware
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
